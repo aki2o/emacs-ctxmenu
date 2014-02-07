@@ -227,12 +227,12 @@ About the item, see `ctxmenu:add-source'.")
                   (setq ret (concat ret (capitalize w))))
         finally return ret))
 
-(defun ctxmenu::get-binding-keys (cmd)
+(defun ctxmenu::get-binding-keys (cmd &optional include-menu)
   (loop for b in (where-is-internal cmd overriding-local-map)
         for bindkey = (or (ignore-errors (key-description b))
                           "")
         if (and (not (string= bindkey ""))
-                (not (string-match "\\`<menu-bar>" bindkey))
+                (if (string-match "\\`<menu-bar>" bindkey) include-menu t)
                 (not (string-match "\\`<[^>]*mouse[^>]*>" bindkey)))
         collect (concat "'" bindkey "'")))
 
@@ -328,8 +328,7 @@ About the item, see `ctxmenu:add-source'.")
                       (not (string-match exclude-re cmdnm)))
                   (or include-all
                       (cond (include-re   (string-match include-re cmdnm))
-                            (include-menu (where-is-internal cmd overriding-local-map))
-                            (t            (ctxmenu::get-binding-keys cmd)))))
+                            (t            (ctxmenu::get-binding-keys cmd include-menu)))))
           collect cmd)))
 
 (defun ctxmenu::get-binding-commands (keystroke)
@@ -392,29 +391,27 @@ About the item, see `ctxmenu:add-source'.")
                                   (t
                                    (concat "\\`" (regexp-quote prefix) delim "\\([a-zA-Z0-9]?\\)")))
             for keystroke = (assoc-default 'keystroke src)
-            for cmds = (cond (keystroke (ctxmenu::get-binding-commands keystroke))
-                             (t         (ctxmenu::get-apropos-commands prefix-re)))
-            for cmds = (ctxmenu::get-condition-matched-commands cmds src)
-            for menulist-func = (or (assoc-default 'menu-list src)
-                                    ctxmenu:default-menu-list-function)
-            for sort-func = (or (assoc-default 'sort src)
-                                ctxmenu:default-sort-menu-function)
-            for remain-prefix = (assoc-default 'remain-prefix src)
             for key = (concat (symbol-name major-mode) " " menunm)
-            for menulist = (or (gethash key ctxmenu::hash-menu-list)
-                               (puthash key
-                                        (let ((ctxmenu::regexp-prefix prefix-re)
-                                              (ctxmenu::remain-prefix remain-prefix)
-                                              (cmdcount (length cmds)))
-                                          (ctxmenu--trace "get menu list\nmenulist-func: %s\nsort-func: %s\ncmds[%s]: %s"
-                                                          menulist-func sort-func cmdcount cmds)
-                                          (when (> cmdcount 50)
-                                            (ctxmenu--info "the menu size of [%s] is [%s]" menunm cmdcount))
-                                          (funcall menulist-func cmds sort-func))
-                                        ctxmenu::hash-menu-list))
-            if (and (not (string= menunm ""))
-                    menulist)
-            collect `(,menunm ,@menulist)))
+            for ret = (or (gethash key ctxmenu::hash-menu-list)
+                          (puthash key
+                                   (let* ((ctxmenu::regexp-prefix prefix-re)
+                                          (ctxmenu::remain-prefix (assoc-default 'remain-prefix src))
+                                          (menulist-func (or (assoc-default 'menu-list src)
+                                                             ctxmenu:default-menu-list-function))
+                                          (sort-func (or (assoc-default 'sort src)
+                                                         ctxmenu:default-sort-menu-function))
+                                          (cmds (cond (keystroke (ctxmenu::get-binding-commands keystroke))
+                                                      (t         (ctxmenu::get-apropos-commands prefix-re))))
+                                          (cmds (ctxmenu::get-condition-matched-commands cmds src))
+                                          (cmdcount (length cmds)))
+                                     (ctxmenu--trace "get menu list\nmenulist-func: %s\nsort-func: %s\ncmds[%s]: %s"
+                                                     menulist-func sort-func cmdcount cmds)
+                                     (when (> cmdcount 50)
+                                       (ctxmenu--info "the menu size of [%s] is [%s]" menunm cmdcount))
+                                     (funcall menulist-func cmds sort-func))
+                                   ctxmenu::hash-menu-list))
+            if (and (not (string= menunm "")) ret)
+            collect `(,menunm ,@ret)))
     (yaxception:catch 'error e
       (ctxmenu--error "failed build menu list : %s\n%s"
                       (yaxception:get-text e)
@@ -422,7 +419,8 @@ About the item, see `ctxmenu:add-source'.")
       (ctxmenu::show-message "Failed show : %s" (yaxception:get-text e)))))
 
 (defsubst ctxmenu::get-setup-symbol (menunm)
-  (intern (concat "ctxmenu::setup-" (downcase menunm))))
+  (intern (concat "ctxmenu::setup-"
+                  (replace-regexp-in-string "[^a-zA-Z0-9!$%&=~|@:*_/?.,<>{}+-]" "" (downcase menunm)))))
 
 (defun ctxmenu::count-menu-list (menu-list)
   (loop with ret = 0
@@ -537,7 +535,7 @@ About the method of the menu format.
                 (delimiter      . ,(eval delimiter))
                 (is-regexp      . ,is-regexp)
                 (keystroke      . ,keystroke)
-                (excludes       . ,excludes)
+                (excludes       . ,(eval excludes))
                 (exclude-regexp . ,(eval exclude-regexp))
                 (include-all    . ,include-all)
                 (include-menu   . ,include-menu)
@@ -553,13 +551,13 @@ About the method of the menu format.
       (t
        (ctxmenu:remove-source :local ,local
                               :hook ,hook
-                              :prefix ,prefix
+                              :prefix ,(eval prefix)
                               :menu-name ,menu-name
                               :is-regexp ,is-regexp)
        (cond (,hook
               (defun ,(ctxmenu::get-setup-symbol currnm) ()
                 (ctxmenu:remove-source :local t
-                                       :prefix ,prefix
+                                       :prefix ,(eval prefix)
                                        :menu-name ,menu-name
                                        :is-regexp ,is-regexp)
                 (add-to-list 'ctxmenu:sources ',src)
@@ -636,6 +634,7 @@ About the format of source, see `ctxmenu:global-sources'."
                                                   ctxmenu:warning-menu-number-threshold)
                            (sleep-for 1))
                          (ctxmenu--debug "start popup cascade menu : %s" menucount)
+                         (ctxmenu--trace "menu-list:\n%s" menu-list)
                          (popup-cascade-menu menu-list
                                              :height (length menu-list)
                                              :scroll-bar t
