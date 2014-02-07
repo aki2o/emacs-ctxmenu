@@ -151,7 +151,7 @@
   :type 'float
   :group 'ctxmenu)
 
-(defcustom ctxmenu:warning-menu-number-threshold 400
+(defcustom ctxmenu:warning-menu-number-threshold nil
   "Number as the threshold whether show the warning about the slowness of Emacs."
   :type 'integer
   :group 'ctxmenu)
@@ -629,7 +629,8 @@ About the format of source, see `ctxmenu:global-sources'."
              (menucount (ctxmenu::count-menu-list menu-list))
              (selected (if (not menu-list)
                            (ctxmenu::show-message "Available menu is nothing")
-                         (when (> menucount ctxmenu:warning-menu-number-threshold)
+                         (when (and ctxmenu:warning-menu-number-threshold
+                                    (> menucount ctxmenu:warning-menu-number-threshold))
                            (ctxmenu--warn "the all number of the menu is %s" menucount)
                            (ctxmenu::show-message "Freeze might happen because the number of the menu exceeds %s."
                                                   ctxmenu:warning-menu-number-threshold)
