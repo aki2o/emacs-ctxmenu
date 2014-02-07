@@ -52,13 +52,13 @@
 (require 'ctxmenu)
 
 (defvar ctxmenu-config:default-features '(emacshelp
-                                          move window region rectangle register coding-system kmacro outline flymake package el-get
+                                          move window region rectangle register coding-system kmacro outline narrow flymake package el-get
                                           dired help info buff ibuffer shell org gnus w3m magit dsvn twittering-mode bbdb bbdb- cperl
                                           moccur anything helm yas tabbar sdic text-translator direx e2wm tail pophint
                                           plsense rsense vbasense tss log4e ajc-java-complete-config scala-mode-auto ensime)
   "List of the symbol that the menu is built of in default.")
 
-(defvar ctxmenu-config:extra-features '(frame kmacro-all tag narrow vc)
+(defvar ctxmenu-config:extra-features '(frame kmacro-all tag vc anything-all helm-all)
   "List of the symbol that the menu is not built of in default.")
 
 (defvar ctxmenu-config:exclude-features nil
@@ -232,8 +232,14 @@
                                                       :include-menu t))
         (anything                 (ctxmenu:add-source :prefix "anything"
                                                       :delimiter "-"))
+        (anything-all             (ctxmenu:add-source :prefix "anything"
+                                                      :delimiter "-"
+                                                      :include-all t))
         (helm                     (ctxmenu:add-source :prefix "helm"
                                                       :delimiter "-"))
+        (helm-all                 (ctxmenu:add-source :prefix "helm"
+                                                      :delimiter "-"
+                                                      :include-all t))
         (yas                      (ctxmenu:add-source :prefix "yas"
                                                       :menu-name "YASnippet"
                                                       :delimiter "/"
