@@ -20,11 +20,11 @@ Install
 
 ### If use package.el
 
-2014/02/08 Not yet available.  
+2014/02/08 Now application.  
 
 ### If use el-get.el
 
-2014/02/08 Not yet available.  
+2014/02/08 Now application.  
 
 ### If use auto-install.el
 
