@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.3
+;; Version: 0.0.4
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -79,6 +79,7 @@
                                                       :menu-list 'ctxmenu:menu-list-simple-cascade))
         (move                     (ctxmenu:add-source :prefix (rx-to-string `(and bos (or "forward"
                                                                                           "backward"
+                                                                                          "scroll"
                                                                                           "up"
                                                                                           "down"
                                                                                           "beginning-of"
