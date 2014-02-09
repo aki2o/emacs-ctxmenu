@@ -102,7 +102,7 @@ set `ctxmenu-config:exclude-features` like the following before `ctxmenu-config:
 #### Other config
 
 You can add the contents what you want by `ctxmenu:add-source`.  
-About usage, eval `(describe-function 'ctxmenu:add-source)`.  
+About usage, eval `(describe-function 'ctxmenu:add-source)` or see ctxmenu-config.el.  
 
 Also, you can change behavior by customize variable.  
 For more information, eval `(customize-group "ctxmenu")`.  
@@ -120,7 +120,13 @@ If you change the definition of the menu contents, do `ctxmenu:clear-cache` for 
 
 In default, a context menu is shown on the start position of current window.  
 You can show it on the current position by setting `ctxmenu:show-at-pointed` non-nil.  
-But, in the case, it might happens that a context menu is not shown so well.  
+But, in the case, it might happen that a context menu is not shown so well.  
+
+### Config by ctxmenu-config:setup
+
+There are the config by `ctxmenu-config:setup` that find the contents of menu from the key stroke.  
+If you change the key bind from default, it might happen that the contents of menu is not right.  
+In the case, you should set `ctxmenu-config:exclude-features` and customize for you.  
 
 
 Tested On

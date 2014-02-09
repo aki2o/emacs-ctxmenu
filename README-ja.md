@@ -105,7 +105,8 @@ ctxmenu.el/ctxmenu-config.elをダウンロードし、load-pathの通った場�
 #### その他
 
 追加で欲しいメニューがあれば、`ctxmenu:add-source`を使うことで実現できます。  
-使い方については、`(describe-function 'ctxmenu:add-source)`を評価して下さい。  
+使い方については、`(describe-function 'ctxmenu:add-source)`を評価するか、
+ctxmenu-config.elを参照して下さい。  
 
 また、本拡張の挙動はカスタマイズ変数の設定により変えることができます。  
 詳しくは、`(customize-group "ctxmenu")`を評価して下さい。  
@@ -124,6 +125,12 @@ ctxmenu.el/ctxmenu-config.elをダウンロードし、load-pathの通った場�
 デフォルトでは、メニューはカレントウィンドウの左上に表示されます。  
 `ctxmenu:show-at-pointed`をnon-nilに設定することで、現在のカーソル位置に表示するようにできますが、  
 その場合、メニュー表示が崩れたり、ヘルプが見えなくなるかもしれません。  
+
+### ctxmenu-config:setupを使った設定
+
+`ctxmenu-config:setup`が行う設定の中には、キーストロークからメニュー内容を生成する設定もあります。  
+キーバインドをデフォルトから変更している場合、内容が正しくないメニューが表示されるかもしれません。  
+その場合は、`ctxmenu-config:exclude-features`で無効にして、あなた向けの設定を追加すると良いかと思います。  
 
 
 動作確認
