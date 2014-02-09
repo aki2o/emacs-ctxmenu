@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.1
+;; Version: 0.1.0
 ;; Package-Requires: ((popup "20140205.103") (log4e "0.2.0") (yaxception "0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -234,13 +234,13 @@ About the item, see `ctxmenu:add-source'.")
         if (and (not (string= bindkey ""))
                 (if (string-match "\\`<menu-bar>" bindkey) include-menu t)
                 (not (string-match "\\`<[^>]*mouse[^>]*>" bindkey)))
-        collect (concat "'" bindkey "'")))
+        collect bindkey))
 
 (defun ctxmenu::get-menu-help (cand)
   (ctxmenu--trace "start get menu help : %s" cand)
   (when (commandp cand)
     (let* ((doc (documentation cand))
-           (bindkeys (ctxmenu::get-binding-keys cand)))
+           (bindkeys (mapcar (lambda (x) (format "'%s'" x)) (ctxmenu::get-binding-keys cand))))
       (when (or (not doc)
                 (string= doc ""))
         (setq doc "Not documented."))
@@ -255,10 +255,18 @@ About the item, see `ctxmenu:add-source'.")
   (ctxmenu--trace "start get menu candidates of depth[%s] from %s" depth syms)
   (let ((ret (loop for s in syms
                    for ret = (ctxmenu::get-menu-candidate-value s depth)
+                   for bindkey = (loop with ret = nil
+                                       for k in (ctxmenu::get-binding-keys s)
+                                       if (or (not ret)
+                                              (and (not (string-match "<[^>]+>" k))
+                                                   (< (length k) (length ret))))
+                                       do (setq ret k)
+                                       finally return ret)
                    do (when (string= ret "") (setq ret (format ctxmenu:empty-candidate-value)))
-                   do (put-text-property 0 1 'value s ret)
-                   do (put-text-property 0 1 'document 'ctxmenu::get-menu-help ret)
-                   collect ret)))
+                   collect (popup-make-item ret
+                                            :value s
+                                            :summary bindkey
+                                            :document 'ctxmenu::get-menu-help))))
     (ctxmenu--trace "got menu candidates : %s" (mapconcat 'identity ret ", "))
     ret))
 
@@ -641,7 +649,9 @@ About the format of source, see `ctxmenu:global-sources'."
                                              :help-delay (when ctxmenu:use-quick-help ctxmenu:quick-help-delay)
                                              :point (when (not ctxmenu:show-at-pointed) (window-start))
                                              :isearch ctxmenu:use-isearch))))
-        (when (commandp selected)
+        (if (or (not (symbolp selected))
+                (not (commandp selected)))
+            (ctxmenu::show-message "Selected value is not command : %s" selected)
           (ctxmenu--trace "execute selected command : %s" selected)
           (call-interactively selected))))
     (yaxception:catch 'error e
