@@ -20,7 +20,7 @@ Install
 
 ### If use package.el
 
-2014/02/08 Now application.  
+2014/02/09 It's available by using melpa.  
 
 ### If use el-get.el
 
