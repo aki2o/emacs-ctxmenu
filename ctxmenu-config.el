@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.2
+;; Version: 0.0.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -51,13 +51,14 @@
 (require 'ctxmenu)
 
 (defvar ctxmenu-config:default-features '(emacshelp
-                                          move window region rectangle register coding-system kmacro outline narrow flymake package el-get
-                                          dired help info buff ibuffer shell org gnus w3m magit dsvn twittering-mode bbdb bbdb- cperl
+                                          move window region rectangle register coding-system kmacro outline flymake
+                                          package el-get dired help info buff ibuffer shell org gnus w3m magit dsvn
+                                          twittering-mode bbdb bbdb- cperl ruby
                                           moccur anything helm yas tabbar sdic text-translator direx e2wm tail pophint
                                           plsense rsense vbasense tss log4e ajc-java-complete-config scala-mode-auto ensime)
   "List of the symbol that the menu is built of in default.")
 
-(defvar ctxmenu-config:extra-features '(frame kmacro-all tag vc anything-all helm-all)
+(defvar ctxmenu-config:extra-features '(frame kmacro-all narrow tag abbrev highlight vc anything-all helm-all)
   "List of the symbol that the menu is not built of in default.")
 
 (defvar ctxmenu-config:exclude-features nil
@@ -125,6 +126,12 @@
                                                       :include-all t
                                                       :remain-prefix t
                                                       :menu-list 'ctxmenu:menu-list-flat))
+        (outline                  (ctxmenu:add-source :menu-name "Outline"
+                                                      :keystroke "C-o"
+                                                      :menu-list 'ctxmenu:menu-list-flat))
+        (narrow                   (ctxmenu:add-source :menu-name "Narrow"
+                                                      :keystroke "C-x n"
+                                                      :menu-list 'ctxmenu:menu-list-flat))
         (tag                      (ctxmenu:add-source :prefix "\\<tags?\\>"
                                                       :menu-name "Tag"
                                                       :delimiter ""
@@ -132,12 +139,20 @@
                                                       :include-all t
                                                       :menu-list 'ctxmenu:menu-list-flat
                                                       :remain-prefix t))
-        (outline                  (ctxmenu:add-source :menu-name "Outline"
-                                                      :keystroke "C-o"
-                                                      :menu-list 'ctxmenu:menu-list-flat))
-        (narrow                   (ctxmenu:add-source :menu-name "Narrow"
-                                                      :keystroke "C-x n"
-                                                      :menu-list 'ctxmenu:menu-list-flat))
+        (abbrev                   (ctxmenu:add-source :prefix "\\<d?abbrev\\>"
+                                                      :menu-name "Abbrev"
+                                                      :delimiter ""
+                                                      :is-regexp t
+                                                      :include-all t
+                                                      :menu-list 'ctxmenu:menu-list-flat
+                                                      :remain-prefix t))
+        (highlight                (ctxmenu:add-source :prefix "\\`\\(?:un\\)?highlight"
+                                                      :menu-name "HighLight"
+                                                      :delimiter "-"
+                                                      :is-regexp t
+                                                      :include-all t
+                                                      :menu-list 'ctxmenu:menu-list-flat
+                                                      :remain-prefix t))
         (vc                       (ctxmenu:add-source :prefix "vc"
                                                       :menu-name "VersionControl"
                                                       :delimiter "-"
@@ -227,8 +242,11 @@
         (cperl                    (ctxmenu:add-source :prefix "cperl"
                                                       :menu-name "Perl"
                                                       :delimiter "-"
-                                                      :include-all t
                                                       :hook 'cperl-mode-hook))
+        (ruby                     (ctxmenu:add-source :prefix "ruby"
+                                                      :menu-name "Ruby"
+                                                      :delimiter "-"
+                                                      :hook 'ruby-mode-hook))
         (moccur                   (ctxmenu:add-source :prefix "moccur"
                                                       :delimiter "-"
                                                       :include-menu t))
