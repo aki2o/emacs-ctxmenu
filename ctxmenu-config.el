@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.1
+;; Version: 0.0.2
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -67,7 +67,10 @@
   "Define sources for `ctxmenu:show'.
 
 - FEATURES is the list of the symbol that the menu is built of. If nil, use `ctxmenu-config:default-features'."
-  (dolist (f (or features ctxmenu-config:default-features))
+  (dolist (f (or (loop for f in features
+                       if (listp f) append f
+                       else collect f)
+                 ctxmenu-config:default-features))
     (when (not (memq f ctxmenu-config:exclude-features))
       (case f
         (emacshelp                (ctxmenu:add-source :menu-name "EmacsHelp"
