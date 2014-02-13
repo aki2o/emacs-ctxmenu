@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.1.0
+;; Version: 0.1.1
 ;; Package-Requires: ((popup "20140205.103") (log4e "0.2.0") (yaxception "0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -395,9 +395,9 @@ About the item, see `ctxmenu:add-source'.")
                                        (string= prefix ""))
                                    (ctxmenu--error "not prefix in source : %s" src))
                                   (is-regexp
-                                   (concat prefix delim "\\([a-zA-Z0-9]?\\)"))
+                                   (concat prefix delim "\\([a-zA-Z0-9]\\|\\'\\)"))
                                   (t
-                                   (concat "\\`" (regexp-quote prefix) delim "\\([a-zA-Z0-9]?\\)")))
+                                   (concat "\\`" (regexp-quote prefix) delim "\\([a-zA-Z0-9]\\|\\'\\)")))
             for keystroke = (assoc-default 'keystroke src)
             for key = (concat (symbol-name major-mode) " " menunm)
             for ret = (or (gethash key ctxmenu::hash-menu-list)
