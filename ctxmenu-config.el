@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.4
+;; Version: 0.0.5
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -299,6 +299,7 @@
         (plsense                  (ctxmenu:add-source :prefix "plsense"
                                                       :menu-name "PlSense"
                                                       :delimiter "-"
+                                                      :exclude-regexp "\\(--\\|:\\|/\\)"
                                                       :include-all t
                                                       :menu-list 'ctxmenu:menu-list-flat
                                                       :hook 'cperl-mode-hook))
@@ -311,12 +312,14 @@
         (vbasense                 (ctxmenu:add-source :prefix "vbasense"
                                                       :menu-name "VBASense"
                                                       :delimiter "-"
+                                                      :exclude-regexp "\\(--\\|:\\|/\\)"
                                                       :include-all t
                                                       :menu-list 'ctxmenu:menu-list-flat
                                                       :hook 'visual-basic-mode-hook))
         (tss                      (ctxmenu:add-source :prefix "tss"
                                                       :menu-name "TSS"
                                                       :delimiter "-"
+                                                      :exclude-regexp "\\(--\\|:\\|/\\)"
                                                       :include-all t
                                                       :menu-list 'ctxmenu:menu-list-flat
                                                       :hook 'typescript-mode-hook))
