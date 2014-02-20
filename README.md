@@ -24,7 +24,7 @@ Install
 
 ### If use el-get.el
 
-2014/02/08 Now application.  
+2014/02/19 It's available. But, master branch only.  
 
 ### If use auto-install.el
 
