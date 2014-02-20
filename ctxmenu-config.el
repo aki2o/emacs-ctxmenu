@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.5
+;; Version: 0.0.6
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@
                                           package el-get dired help info buff ibuffer shell org gnus w3m magit dsvn
                                           twittering-mode bbdb bbdb- cperl ruby
                                           moccur anything helm yas tabbar sdic text-translator direx e2wm tail pophint
-                                          plsense rsense vbasense tss log4e ajc-java-complete-config scala-mode-auto ensime)
+                                          plcmp plsense rsense vbasense tss log4e ajc-java-complete-config scala-mode-auto ensime)
   "List of the symbol that the menu is built of in default.")
 
 (defvar ctxmenu-config:extra-features '(frame kmacro-all narrow tag abbrev highlight vc anything-all helm-all)
@@ -296,6 +296,11 @@
                                                       :menu-name "PopHint"
                                                       :delimiter ":"
                                                       :include-all t))
+        (plcmp                    (ctxmenu:add-source :prefix "plcmp"
+                                                      :menu-name "PlCmp"
+                                                      :delimiter "-"
+                                                      :menu-list 'ctxmenu:menu-list-flat
+                                                      :hook 'cperl-mode-hook))
         (plsense                  (ctxmenu:add-source :prefix "plsense"
                                                       :menu-name "PlSense"
                                                       :delimiter "-"
