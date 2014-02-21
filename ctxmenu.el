@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.1.1
+;; Version: 0.2.0
 ;; Package-Requires: ((popup "20140205.103") (log4e "0.2.0") (yaxception "0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -112,6 +112,7 @@
 
 (eval-when-compile (require 'cl))
 (require 'popup)
+(require 'auto-complete nil t)
 (require 'log4e)
 (require 'yaxception)
 
@@ -633,6 +634,11 @@ About the format of source, see `ctxmenu:global-sources'."
       (ctxmenu--trace "start show : %s" sources)
       (let* ((menu-list (ctxmenu::build-menu-list sources))
              (menucount (ctxmenu::count-menu-list menu-list))
+             (popup-menu-show-quick-help-function (if (and (functionp 'ac-quick-help-use-pos-tip-p)
+                                                           (functionp 'ac-pos-tip-show-quick-help)
+                                                           (ac-quick-help-use-pos-tip-p))
+                                                      'ac-pos-tip-show-quick-help
+                                                    popup-menu-show-quick-help-function))
              (selected (if (not menu-list)
                            (ctxmenu::show-message "Available menu is nothing")
                          (when (and ctxmenu:warning-menu-number-threshold
