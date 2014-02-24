@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.7
+;; Version: 0.0.8
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -144,7 +144,7 @@
                                                       :menu-list 'ctxmenu:menu-list-flat))
         (outline                  (ctxmenu:add-source :menu-name "Outline"
                                                       :keystroke "C-o"
-                                                      :menu-list 'ctxmenu:menu-list-flat))
+                                                      :menu-list 'ctxmenu:menu-list-simple-cascade))
         (narrow                   (ctxmenu:add-source :menu-name "Narrow"
                                                       :keystroke "C-x n"
                                                       :menu-list 'ctxmenu:menu-list-flat))
