@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.0.6
+;; Version: 0.0.7
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@
 (require 'ctxmenu)
 
 (defvar ctxmenu-config:default-features '(emacshelp
-                                          move window region rectangle register coding-system kmacro outline flymake
+                                          move window region rectangle register coding-system scale convert kmacro outline flymake
                                           package el-get dired help info buff ibuffer shell org gnus w3m magit dsvn
                                           twittering-mode bbdb bbdb- cperl ruby
                                           moccur anything helm yas tabbar sdic text-translator direx e2wm tail pophint
@@ -117,6 +117,21 @@
                                                       :keystroke "C-x RET"
                                                       :include-regexp "\\<coding\\>"
                                                       :menu-list 'ctxmenu:menu-list-flat))
+        (scale                    (ctxmenu:add-source :prefix "text-scale"
+                                                      :menu-name "Scale"
+                                                      :delimiter "-"
+                                                      :include-all t
+                                                      :remain-prefix t
+                                                      :menu-list 'ctxmenu:menu-list-flat))
+        (convert                  (ctxmenu:add-source :prefix (rx-to-string `(and bos (or "upcase"
+                                                                                          "downcase"
+                                                                                          "capitalize") eow))
+                                                      :menu-name "Convert"
+                                                      :delimiter "-"
+                                                      :is-regexp t
+                                                      :include-all t
+                                                      :menu-list 'ctxmenu:menu-list-flat
+                                                      :remain-prefix t))
         (kmacro                   (ctxmenu:add-source :menu-name "KbdMacro"
                                                       :keystroke "C-x C-k"
                                                       :menu-list 'ctxmenu:menu-list-flat))
