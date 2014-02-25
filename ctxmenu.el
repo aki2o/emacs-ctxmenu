@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.2.1
+;; Version: 0.3.0
 ;; Package-Requires: ((popup "20140205.103") (log4e "0.2.0") (yaxception "0.1"))
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -91,6 +91,8 @@
 ;; Sort the candidate of menu.
 ;; `ctxmenu:menu-list-simple-cascade'
 ;; Build a cascade menu with prefixmatch.
+;; `ctxmenu:menu-list-custom-cascade'
+;; Build a cascade menu from MENU-ARG.
 ;; `ctxmenu:menu-list-flat'
 ;; Build a flat menu.
 ;; `ctxmenu:remove-source'
@@ -179,6 +181,7 @@ The format of source is alist that has the follwing item.
 - include-menu
 - include-regexp
 - menu-list
+- menu-arg
 - sort
 - remain-prefix
 
@@ -200,6 +203,7 @@ About the item, see `ctxmenu:add-source'.")
 (defvar ctxmenu::hash-menu-list (make-hash-table :test 'equal))
 (defvar ctxmenu::regexp-prefix nil)
 (defvar ctxmenu::remain-prefix nil)
+(defvar ctxmenu::menu-arg nil)
 
 
 (defun* ctxmenu::show-message (msg &rest args)
@@ -207,10 +211,11 @@ About the item, see `ctxmenu:add-source'.")
   nil)
 
 (defsubst ctxmenu::remove-prefix (sym)
-  (if (or ctxmenu::remain-prefix
-          (not ctxmenu::regexp-prefix))
-      (symbol-name sym)
-    (replace-regexp-in-string ctxmenu::regexp-prefix "\\1" (symbol-name sym))))
+  (let ((symnm (if (stringp sym) sym (symbol-name sym))))
+    (if (or ctxmenu::remain-prefix
+            (not ctxmenu::regexp-prefix))
+        symnm
+      (replace-regexp-in-string ctxmenu::regexp-prefix "\\1" symnm))))
 
 (defsubst ctxmenu::get-composed-words (sym)
   (mapcar (lambda (s) (downcase s))
@@ -228,7 +233,7 @@ About the item, see `ctxmenu:add-source'.")
                   (setq ret (concat ret (capitalize w))))
         finally return ret))
 
-(defun ctxmenu::get-binding-keys (cmd &optional include-menu)
+(defsubst ctxmenu::get-binding-keys (cmd &optional include-menu)
   (loop for b in (where-is-internal cmd overriding-local-map)
         for bindkey = (or (ignore-errors (key-description b))
                           "")
@@ -236,6 +241,15 @@ About the item, see `ctxmenu:add-source'.")
                 (if (string-match "\\`<menu-bar>" bindkey) include-menu t)
                 (not (string-match "\\`<[^>]*mouse[^>]*>" bindkey)))
         collect bindkey))
+
+(defsubst ctxmenu::get-menu-candidate-summary (sym)
+  (loop with ret = nil
+        for k in (ctxmenu::get-binding-keys sym)
+        if (or (not ret)
+               (and (not (string-match "<[^>]+>" k))
+                    (< (length k) (length ret))))
+        do (setq ret k)
+        finally return ret))
 
 (defun ctxmenu::get-menu-help (cand)
   (ctxmenu--trace "start get menu help : %s" cand)
@@ -252,22 +266,19 @@ About the item, see `ctxmenu:add-source'.")
               "[Documentation]\n\n"
               doc))))
 
+(defsubst ctxmenu::mk-menu-candidate (menunm sym)
+  (popup-make-item menunm
+                   :value sym
+                   :summary (ctxmenu::get-menu-candidate-summary sym)
+                   :document 'ctxmenu::get-menu-help))
+
 (defun ctxmenu::get-menu-candidates (syms &optional depth)
   (ctxmenu--trace "start get menu candidates of depth[%s] from %s" depth syms)
   (let ((ret (loop for s in syms
-                   for ret = (ctxmenu::get-menu-candidate-value s depth)
-                   for bindkey = (loop with ret = nil
-                                       for k in (ctxmenu::get-binding-keys s)
-                                       if (or (not ret)
-                                              (and (not (string-match "<[^>]+>" k))
-                                                   (< (length k) (length ret))))
-                                       do (setq ret k)
-                                       finally return ret)
-                   do (when (string= ret "") (setq ret (format ctxmenu:empty-candidate-value)))
-                   collect (popup-make-item ret
-                                            :value s
-                                            :summary bindkey
-                                            :document 'ctxmenu::get-menu-help))))
+                   for v = (ctxmenu::get-menu-candidate-value s depth)
+                   do (when (string= v "")
+                        (setq v (format ctxmenu:empty-candidate-value)))
+                   collect (ctxmenu::mk-menu-candidate v s))))
     (ctxmenu--trace "got menu candidates : %s" (mapconcat 'identity ret ", "))
     ret))
 
@@ -409,12 +420,13 @@ About the item, see `ctxmenu:add-source'.")
                                                              ctxmenu:default-menu-list-function))
                                           (sort-func (or (assoc-default 'sort src)
                                                          ctxmenu:default-sort-menu-function))
+                                          (ctxmenu::menu-arg (assoc-default 'menu-arg src))
                                           (cmds (cond (keystroke (ctxmenu::get-binding-commands keystroke))
                                                       (t         (ctxmenu::get-apropos-commands prefix-re))))
                                           (cmds (ctxmenu::get-condition-matched-commands cmds src))
                                           (cmdcount (length cmds)))
-                                     (ctxmenu--trace "get menu list\nmenulist-func: %s\nsort-func: %s\ncmds[%s]: %s"
-                                                     menulist-func sort-func cmdcount cmds)
+                                     (ctxmenu--trace "get menu list\nmenulist-func: %s\nmenu-arg: %s\nsort-func: %s\ncmds[%s]: %s"
+                                                     menulist-func ctxmenu::menu-arg sort-func cmdcount cmds)
                                      (when (> cmdcount 50)
                                        (ctxmenu--info "the menu size of [%s] is [%s]" menunm cmdcount))
                                      (funcall menulist-func cmds sort-func))
@@ -488,6 +500,76 @@ About the item, see `ctxmenu:add-source'.")
               (ctxmenu::get-menu-candidates commands (- depth 1)))
           sort-func)))
 
+(defun ctxmenu:menu-list-custom-cascade (commands sort-func &optional menu-arg)
+  "Build a cascade menu from MENU-ARG.
+
+The format of MENU-ARG is the list of plist that each of build one menu.
+The plist format is (MENUNM :PROP VALUE ...).
+MENUNM is a symbol means the name of child menu.
+PROP/VALUE are the following items.
+
+- REGEXP ... The format is a string or a cons of string or list of cons.
+             This value or the first of this cons is a regular expression for listing menu.
+             If the second of this cons exists, replace the matched part with it.
+             If this format is list of cons, command is listed if one of them matches that.
+- EQUAL  ... The format is a string or a cons of string or list of cons.
+             This value or the first of this cons is a command name for listing menu.
+             If the second of this cons exists, use that for the name of menu.
+- NOSORT ... If non-nil, the menu item is not sorted.
+- SUB    ... The format is a symbol of function or same format of MENU-ARG.
+             If this value exists, create child menu by that."
+  (loop with parse-prop = (lambda (x)
+                            (cond ((stringp x)                       (list x))
+                                  ((and (consp x) (stringp (car x))) (list x))
+                                  (t                                 x)))
+        with parse-elem = (lambda (x)
+                            (list (if (stringp x) x (car x))
+                                  (when (consp x) (cdr x))))
+        for p in (or menu-arg ctxmenu::menu-arg)
+        for menunm = (pop p)
+        for menunm = (if (symbolp menunm) (symbol-name menunm) menunm)
+        for re-prop = (plist-get p :regexp)
+        for eq-prop = (plist-get p :equal)
+        for nst-prop = (plist-get p :nosort)
+        for sub-prop = (plist-get p :sub)
+        for cands = (append
+                     (loop for recons in (funcall parse-prop re-prop)
+                           append (multiple-value-bind (re rep) (funcall parse-elem recons)
+                                    (loop with ctxmenu::remain-prefix = (when rep t)
+                                          for cmd in commands
+                                          for cmdnm = (symbol-name cmd)
+                                          for cmdnm = (when (string-match re cmdnm)
+                                                        (if rep
+                                                            (replace-regexp-in-string re rep cmdnm)
+                                                          cmdnm))
+                                          if cmdnm
+                                          collect (if sub-prop
+                                                      cmd
+                                                    (ctxmenu::mk-menu-candidate (ctxmenu::get-menu-candidate-value cmdnm)
+                                                                                cmd)))))
+                     (loop for eqcons in (funcall parse-prop eq-prop)
+                           collect (multiple-value-bind (eqval nmval) (funcall parse-elem eqcons)
+                                     (loop for cmd in commands
+                                           for cmdnm = (symbol-name cmd)
+                                           if (string= cmdnm eqval)
+                                           return (if sub-prop
+                                                      cmd
+                                                    (ctxmenu::mk-menu-candidate (or nmval
+                                                                                    (ctxmenu::get-menu-candidate-value cmd))
+                                                                                cmd))))))
+        for cands = (loop for c in cands if c collect c)
+        for cands = (cond (sub-prop
+                           (when (and (not re-prop) (not eq-prop))
+                             (setq cands commands))
+                           (if (functionp sub-prop)
+                               (funcall sub-prop cands sort-func)
+                             (ctxmenu:menu-list-custom-cascade cands sort-func sub-prop)))
+                          ((not nst-prop)
+                           (sort cands sort-func))
+                          (t
+                           cands))
+        if cands collect `(,menunm ,@cands)))
+
 (defun ctxmenu:menu-list-flat (commands sort-func)
   "Build a flat menu."
   (sort (ctxmenu::get-menu-candidates commands) sort-func))
@@ -510,6 +592,7 @@ About the item, see `ctxmenu:add-source'.")
                                     include-menu
                                     include-regexp
                                     menu-list
+                                    menu-arg
                                     sort
                                     remain-prefix)
   "Add a source into `ctxmenu:global-sources'/`ctxmenu:sources'.
@@ -538,6 +621,7 @@ About the target of the added source.
 
 About the method of the menu format.
 - MENU-LIST is the symbol of the function that format menu-list. If nil, use `ctxmenu:default-menu-list-function'.
+- MENU-ARG is the argument to MENU-LIST. It depends on MENU-LIST whether this value is necessary or not.
 - SORT is the symbol of the function that sort menu-list. If nil, use `ctxmenu:default-sort-menu-function'."
   (let* ((src `((prefix         . ,(eval prefix))
                 (menu-name      . ,menu-name)
@@ -550,6 +634,7 @@ About the method of the menu format.
                 (include-menu   . ,include-menu)
                 (include-regexp . ,(eval include-regexp))
                 (menu-list      . ,(eval menu-list))
+                (menu-arg       . ,(eval menu-arg))
                 (sort           . ,(eval sort))
                 (remain-prefix  . ,remain-prefix)))
          (currnm (ctxmenu::get-menunm src))
