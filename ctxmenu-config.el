@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.1.0
+;; Version: 0.1.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -249,7 +249,8 @@
                                    :delimiter "-"
                                    :hook 'shell-mode-hook))
         (org                      (ctxmenu:add-source
-                                   :prefix "\\`\\(?:org\\|outline)"
+                                   :prefix "\\`\\(?:org\\|outline\\)"
+                                   :menu-name "Org"
                                    :delimiter "-"
                                    :is-regexp t
                                    :include-all t
