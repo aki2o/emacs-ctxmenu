@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.1.1
+;; Version: 0.1.2
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@
 ;; Enjoy!!!
 
 
+(eval-when-compile (require 'cl))
 (require 'ctxmenu)
 
 (defvar ctxmenu-config:default-features '(emacshelp
@@ -293,6 +294,9 @@
                                                              ("org-shiftup" . "Priority Up")
                                                              ("org-shiftdown" . "Priority Down"))
                                                      :nosort t)
+                                               (Tag :equal (("org-ctrl-c-ctrl-c" . "Insert")
+                                                            ("org-match-sparse-tree" . "Search"))
+                                                    :nosort t)
                                                (Agenda :equal (("org-agenda" . "Do")
                                                                ("org-agenda-file-to-front" . "Add Current File")
                                                                ("org-remove-file" . "Remove Current File")
