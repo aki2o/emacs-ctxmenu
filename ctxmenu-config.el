@@ -5,7 +5,7 @@
 ;; Author: Hiroaki Otsu <ootsuhiroaki@gmail.com>
 ;; Keywords: popup
 ;; URL: https://github.com/aki2o/emacs-ctxmenu
-;; Version: 0.1.2
+;; Version: 0.1.3
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -322,6 +322,7 @@
                                    :prefix "magit"
                                    :menu-name "Git"
                                    :delimiter "-"
+                                   :menu-list 'ctxmenu:menu-list-simple-cascade
                                    :hook 'magit-mode-hook))
         (dsvn                     (ctxmenu:add-source
                                    :prefix "dsvn"
